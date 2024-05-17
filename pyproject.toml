@@ -2,9 +2,13 @@
 requires = ["maturin>=1,<2"]
 build-backend = "maturin"
 
+[tool.maturin]
+python-source = "python"
+module-name = "edge_cli"
+
 [project]
 name = "edge_cli"
-version = "0.1"
+version = "0.0.1"
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Rust",

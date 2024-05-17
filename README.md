@@ -2,10 +2,8 @@
 API to connect to dRISK Edge.
 
 ## Installation
-Build `rust` bindings and install:
 ```
-pip install maturin
-maturin develop -r --features extension-module
+pip install drisk_api
 ```
 
 ## Usage

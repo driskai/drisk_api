@@ -4,8 +4,8 @@ API to connect to dRISK Edge.
 ### Useful Edge Links
 Some useful links for new edge users:
 
-- Log in to edge: demo.drisk.ai
-- Documentation: demo.drisk.ai/docs
+- Log in to edge: [demo.drisk.ai](https://demo.drisk.ai/)
+- Documentation: [demo.drisk.ai/docs](https://demo.drisk.ai/docs/)
 
 
 
@@ -16,7 +16,7 @@ pip install drisk_api
 
 ## Baisc Usage
 
-The API supports the basic building blocs for Create/Update/Delete operations on the graph. For example:
+The API supports the basic building blocs for Create/Read/Update/Delete operations on the graph. For example:
 
 
 ```python
@@ -24,12 +24,15 @@ from drisk_api import GraphClient
 
 token = "<edge_auth_token>"
 
-# create or conntect to a grpah
-graph = GraphClient.create_graph("a graph", token)
+# create or conntect to a graph
+new_graph = GraphClient.create_graph("a graph", token)
 graph = GraphClient("graph_id", token)
 
 # make a new node
 node_id = graph.create_node(label="a node")
+
+# get a node
+node = graph.get_node(node_id)
 
 # get the successors of the node
 successors = graph.get_successors(node_id)
@@ -45,14 +48,19 @@ with graph.batch():
 
 ## More Examples
 
-From the basic usage more complex graphs can be created for whatever custom application is necessary. Below are some examples
+We can use these building blocks to create whatever graphs we are most interested in. Below are some examples:
+
 
 ### Wikepedia Crawler
 
 In this example we will scrape the main url links for a given wikipedia page and create a graph out of it.
 
 
-First load the relevant modules.
+Most of the code will be leveraging the [wikipedia api](https://pypi.org/project/wikipedia/) and is not particularly important. 
+What is more interesting is how we can use the `api` to convert the corresponding information into a graph to then explore it in edge.
+
+
+First load the relevant module
 
 ```python
 import wikipedia

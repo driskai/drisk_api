@@ -44,3 +44,7 @@ impl std::ops::AddAssign for NodeUpdate {
         }
     }
 }
+
+pub struct DeadStruct {
+    pub foo: f32,
+}

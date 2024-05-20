@@ -6,7 +6,7 @@ on:
       - '**.rs'
       - '**/workflows/rust.yml'
     branches:
-      - 'updates-v1'
+      - 'main'
   pull_request:
     paths:
       - '**.rs'

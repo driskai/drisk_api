@@ -3,7 +3,7 @@ name: pre-commit
 on:
   push:
     branches:
-      - updates-v1
+      - main
   pull_request:
     branches:
       - main

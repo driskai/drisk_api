@@ -4,10 +4,10 @@ build-backend = "maturin"
 
 [tool.maturin]
 python-source = "python"
-module-name = "edge_cli"
+module-name = "drisk_api"
 
 [project]
-name = "edge_cli"
+name = "drisk_api"
 version = "0.0.1"
 requires-python = ">=3.7"
 classifiers = [

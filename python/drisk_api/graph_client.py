@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 import requests
 
-from .edge_cli import PyGraphDiff
+from .drisk_api import PyGraphDiff
 
 
 class EdgeException(Exception):

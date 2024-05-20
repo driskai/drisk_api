@@ -114,7 +114,7 @@ impl PyGraphDiff {
 }
 
 #[pymodule]
-pub fn edge_cli(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn drisk_api(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyGraphDiff>()?;
     Ok(())
 }

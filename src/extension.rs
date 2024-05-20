@@ -76,7 +76,7 @@ pub struct PyGraphDiff(GraphDiff<Uuid, NodeUpdate>);
 impl PyGraphDiff {
     #[new]
     fn new() -> Self {
-        PyGraphDiff(GraphDiff::new())
+        PyGraphDiff(GraphDiff::<_, _, f32>::new())
     }
 
     fn num_nodes(&self) -> usize {

@@ -52,3 +52,36 @@ where
         edges: deserialized.2,
     })
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::{diff::GraphDiff, node_update::NodeUpdate};
+
+    #[test]
+    fn test_serialization() {
+        let mut diff = GraphDiff::<usize, NodeUpdate>::new();
+        diff.add_or_update_node(&1, NodeUpdate::default());
+        diff.add_or_update_node(
+            &2,
+            NodeUpdate {
+                label: Some("test".to_string()),
+                ..NodeUpdate::default()
+            },
+        );
+        diff.add_or_update_node(
+            &3,
+            NodeUpdate {
+                red: Some(5),
+                ..NodeUpdate::default()
+            },
+        );
+        diff.add_edge(&1, &2, 0.).unwrap();
+        diff.add_edge(&2, &3, 10.).unwrap();
+
+        let bytes = graph_diff_to_bytes(&diff).unwrap();
+        let deserialized = bytes_to_graph_diff::<usize, NodeUpdate>(&bytes).unwrap();
+        assert_eq!(diff, deserialized);
+    }
+}

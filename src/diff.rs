@@ -27,10 +27,10 @@ use std::{fmt::Debug, hash::Hash, ops::AddAssign};
 /// // If a node is deleted in `diff2`, it will be deleted in the combined diff.
 /// diff1 += diff2;
 /// ```
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GraphDiff<Id: Hash + Eq + Copy, T: Default + AddAssign> {
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct GraphDiff<Id: Hash + Eq + Copy, T: Default + AddAssign, W = f32> {
     pub(crate) nodes: NodeDiff<Id, T>,
-    pub(crate) edges: EdgeDiff<Id>,
+    pub(crate) edges: EdgeDiff<Id, W>,
 }
 
 impl<Id: Hash + Eq + Copy, T: Default + AddAssign> Default for GraphDiff<Id, T> {
@@ -48,7 +48,7 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> Default for GraphDiff<Id, T> 
     }
 }
 
-impl<Id: Hash + Eq + Copy, T: Default + AddAssign> GraphDiff<Id, T> {
+impl<Id: Hash + Eq + Copy, T: Default + AddAssign, W: Copy + PartialEq> GraphDiff<Id, T, W> {
     pub fn new() -> GraphDiff<Id, T> {
         GraphDiff::default()
     }
@@ -69,12 +69,12 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> GraphDiff<Id, T> {
     }
 
     /// Get a reference to the edge diff.
-    pub fn edges(&self) -> &EdgeDiff<Id> {
+    pub fn edges(&self) -> &EdgeDiff<Id, W> {
         &self.edges
     }
 
     /// Get a reference to the new or updated edges.
-    pub fn new_or_updated_edges(&self) -> &HashMap<Id, HashMap<Id, f32>> {
+    pub fn new_or_updated_edges(&self) -> &HashMap<Id, HashMap<Id, W>> {
         &self.edges.new_or_updated
     }
 
@@ -150,12 +150,8 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> GraphDiff<Id, T> {
         &mut self,
         from: &Id,
         to: &Id,
-        weight: f32,
+        weight: W,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        if weight.is_nan() || weight == std::f32::INFINITY || weight == std::f32::NEG_INFINITY {
-            return Ok(()); // ignore invalid weights
-        }
-
         if self.nodes.deleted.contains(from) || self.nodes.deleted.contains(to) {
             return Err("Either from or to nodes are marked to be deleted".into());
         }
@@ -176,7 +172,7 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> GraphDiff<Id, T> {
     /// Add edges in batch to the dif.
     pub fn add_edges(
         &mut self,
-        edges: &HashMap<Id, HashMap<Id, f32>>,
+        edges: &HashMap<Id, HashMap<Id, W>>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         for (from, to_weight) in edges {
             for (to, weight) in to_weight {
@@ -203,7 +199,7 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> GraphDiff<Id, T> {
     /// Does not check that the node IDs are valid (i.e. not marked as deleted).
     pub unsafe fn add_edges_unchecked(
         &mut self,
-        edges: HashMap<Id, HashMap<Id, f32>>,
+        edges: HashMap<Id, HashMap<Id, W>>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         for (from, inner_map) in edges {
             self.edges
@@ -300,7 +296,7 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> AddAssign<NodeDiff<Id, T>> fo
 }
 
 /// A diff between the nodes of a graph.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeDiff<Id: Hash + Eq, T> {
     new_or_updated: HashMap<Id, T>,
@@ -323,10 +319,10 @@ impl<Id: Hash + Eq, T> NodeDiff<Id, T> {
 }
 
 /// A diff between the edges of a graph.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EdgeDiff<Id: Hash + Eq> {
-    new_or_updated: HashMap<Id, HashMap<Id, f32>>,
+pub struct EdgeDiff<Id: Hash + Eq, W = f32> {
+    new_or_updated: HashMap<Id, HashMap<Id, W>>,
     deleted: HashMap<Id, HashSet<Id>>,
 }
 

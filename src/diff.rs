@@ -103,6 +103,18 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign> GraphDiff<Id, T> {
         Ok(())
     }
 
+    pub fn delete_edges(
+        &mut self,
+        edges: &HashMap<Id, HashSet<Id>>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        for (from, to_set) in edges {
+            for to in to_set {
+                self.delete_edge(from, to);
+            }
+        }
+        Ok(())
+    }
+
     /// # Safety
     /// Does not check that the node IDs are valid.
     pub unsafe fn add_edges_unchecked(

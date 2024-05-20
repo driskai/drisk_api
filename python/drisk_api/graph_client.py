@@ -65,7 +65,6 @@ class GraphClient:
         Raises
         ------
             EdgeException: If graph creation fails.
-
         """
         if url is None:
             url = cls.default_url

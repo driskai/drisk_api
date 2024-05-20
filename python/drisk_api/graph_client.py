@@ -8,10 +8,14 @@ from .drisk_api import PyGraphDiff
 
 
 class EdgeException(Exception):
+    """General Edge Expection."""
+
     pass
 
 
 def edge_sync(func):
+    """Sync edges."""
+
     def wrapper(self: "GraphClient", *args, **kwargs):
         result = func(self, *args, **kwargs)
         if self.batching is False:
@@ -54,11 +58,14 @@ class GraphClient:
             token (str): Authentication token.
             url (Optionalal[str]): API endpoint URL (default URL if not provided).
 
-        Returns:
+        Returns
+        -------
             GraphClient: Instance representing the new graph.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If graph creation fails.
+
         """
         if url is None:
             url = cls.default_url
@@ -92,8 +99,10 @@ class GraphClient:
         """
         Connect to the graph server and load the graph.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If connecting to the server or loading the graph fails.
+
         """
         url = f"{self.url}/{self.graph_id}/load"
         r = requests.get(url, headers={"Authorization": self.auth_token})
@@ -107,9 +116,11 @@ class GraphClient:
         Args:
             name (str): The new name for the graph.
 
-        Raises:
+        Raises
+        ------
             ValueError: If the provided name is empty.
             EdgeException: If renaming the graph fails.
+
         """
         if len(name) == 0:
             raise ValueError("Name cannot be empty")
@@ -125,15 +136,29 @@ class GraphClient:
         """
         Delete the graph.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If deleting the graph fails.
+
         """
         url = f"{self.url}/{self.graph_id}/delete"
         r = requests.delete(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
             raise EdgeException(r.text)
 
-    def get_node(self, node_id: UUID) -> dict | None:
+    def get_node(self, node_id: UUID) -> Optional["Node"]:
+        """
+        Get a node given the id.
+
+        Args:
+            node_id (UUID): The ID of the node.
+
+        Returns
+        -------
+            Optional[Node]: The Node representation of the node_id. If it doesn't
+            exist it will be none.
+
+        """
         data = self._get_node_request(node_id)
         if data is None:
             return None
@@ -156,10 +181,12 @@ class GraphClient:
             weights (bool, optional): Whether to include edge weights.
             Defaults to False.
 
-        Returns:
-            Union[list[UUID], list[tuple[UUID, float]]]: A list of successor node IDs,
-            or a list of tuples containing successor node IDs and their weights if
-            `weights` is True.
+        Returns
+        -------
+            Union[list[UUID], list[tuple[UUID, float]]]: A list of successor node
+            IDs, or a list of tuples containing successor node IDs and their
+            weights if `weights` is True.
+
         """
         return self._get_node_request(node_id, "successors", weights=weights)
 
@@ -176,10 +203,12 @@ class GraphClient:
             weights (bool, optional): Whether to include edge weights.
             Defaults to False.
 
-        Returns:
+        Returns
+        -------
             Union[list[UUID], list[tuple[UUID, float]]]: A list of predecessors node
-            IDs, or a list of tuples containing successor node IDs and their weights if
-            `weights` is True.
+            IDs, or a list of tuples containing successor node IDs and their
+            weights if `weights` is True.
+
         """
         return self._get_node_request(node_id, "predecessors", weights=weights)
 
@@ -190,10 +219,12 @@ class GraphClient:
         Args:
             nodes (Iterable[UUID]): Iterable of node IDs.
 
-        Returns:
+        Returns
+        -------
             dict: Nested dictionary representing edges between nodes.
                 Format: {from_node_id: {to_node_id: weight}}.
                 Returns a dictionary for each given node even if it has no edges.
+
         """
         url = f"{self.url}/{self.graph_id}/atomic/edges"
         r = requests.get(
@@ -223,8 +254,10 @@ class GraphClient:
             If None, a default y-axis node is created.
             filters (Optionalal[List[str]]): List of labels for filter nodes.
 
-        Returns:
+        Returns
+        -------
             UUID: The ID of the created view node.
+
         """
         view_node = self.create_node(label=label)
         if x_node is None:
@@ -242,14 +275,18 @@ class GraphClient:
 
         return view_node
 
-    def add_nodes_to_view(self, view_node: str, nodes: List[str], coords: List[Tuple]):
+    def add_nodes_to_view(
+        self, view_node: str, nodes: List[str], coords: List[Tuple]
+    ):
         """
         Add nodes to a view with given coordinates.
 
         Args:
+        ----
             view_node (str): The ID of the view node.
             nodes (List[str]): List of node IDs to add to the view.
             coords (List[Tuple]): List of coordinate tuples (x, y) for each node.
+
         """
         x_node, y_node, *_ = [
             uuid
@@ -267,8 +304,10 @@ class GraphClient:
         """
         Post the graph differences to the server.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If posting the graph differences fails.
+
         """
         if self._diff_size() == 0:
             return
@@ -287,8 +326,10 @@ class GraphClient:
         """
         Calculate the size of the graph diff.
 
-        Returns:
+        Returns
+        -------
             int: The total number of nodes and edges in the graph diff.
+
         """
         return self.diff.num_nodes() + self.diff.num_edges()
 
@@ -305,13 +346,16 @@ class GraphClient:
             node_id (UUID): The ID of the node to retrieve information for.
             nbr_type (Optionalal[str]): The type of neighboring nodes to include
             (default: None).
-            weights (bool): Whether to include weights in the response (default: False).
+            weights (bool): Include weights in the response (default: False).
 
-        Returns:
+        Returns
+        -------
             dict: JSON response containing information about the node.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If retrieving information about the node fails.
+
         """
         url = f"{self.url}/{self.graph_id}/atomic/{node_id}"
         if nbr_type:
@@ -343,7 +387,8 @@ class GraphClient:
         Keyword Args:
             **properties: Properties of the node.
 
-        Returns:
+        Returns
+        -------
             UUID: The ID of the created node.
 
         """
@@ -360,6 +405,7 @@ class GraphClient:
         Create a new edge between two nodes.
 
         Args:
+        ----
             from_ (UUID): The ID of the source node.
             to (UUID): The ID of the target node.
             weight (float, optional): The weight of the edge (default: 1.0).
@@ -377,6 +423,7 @@ class GraphClient:
         Delete a node from the graph.
 
         Args:
+        ----
             node_id (UUID): The ID of the node to be deleted.
 
         """
@@ -390,6 +437,7 @@ class GraphClient:
         Delete an edge between two nodes.
 
         Args:
+        ----
             from_ (UUID): The ID of the source node.
             to (UUID): The ID of the target node.
 
@@ -406,6 +454,7 @@ class GraphClient:
         Update properties of a node.
 
         Args:
+        ----
             node_id (UUID): The ID of the node to update.
             **new_properties: Properties to update for the node.
 
@@ -422,10 +471,12 @@ class GraphClient:
             filename (str): The name of the file.
             file (io.BytesIO): The file object to import.
 
-        Returns:
+        Returns
+        -------
             str: The ID of the imported file node.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If importing the file fails.
 
         """
@@ -449,7 +500,8 @@ class GraphClient:
             filename (str): The name of the file to update.
             file (io.BytesIO): The updated file object.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If updating the file fails.
 
         """
@@ -470,10 +522,12 @@ class GraphClient:
             filename (str): The name of the JSON file.
             file (Union[Dict, List]): The JSON data to add.
 
-        Returns:
+        Returns
+        -------
             str: The ID of the added JSON data.
 
-        Raises:
+        Raises
+        ------
             EdgeException: If adding the JSON data fails.
 
         """
@@ -492,11 +546,14 @@ class GraphClient:
 
 
 class Node:
+    """Class representing a Node object."""
+
     def __init__(self, graph: GraphClient, id: UUID, **properties):
         """
         Initialize a Node instance.
 
         Args:
+        ----
             graph (GraphClient): The graph client instance.
             id (UUID): The ID of the node.
             **properties: Additional properties of the node.
@@ -522,7 +579,9 @@ class Node:
         Update properties of the node.
 
         Args:
+        ----
             **new_properties: New properties of the node.
+
         """
         self._properties = {**self._properties, **new_properties}
         self.graph.update_node(self.id, **self._properties)
@@ -532,14 +591,16 @@ class Node:
         """
         Get the properties of the node.
 
-        Returns:
+        Returns
+        -------
             dict: The properties of the node.
-        """
 
+        """
         return self._properties
 
     @properties.setter
     def properties(self):
+        """Properties Setter. Prevent from using this."""
         raise ValueError("Cannot set properties. Use 'update_node' method.")
 
     @property
@@ -547,14 +608,26 @@ class Node:
         """
         Get the label of the node.
 
-        Returns:
+        Returns
+        -------
             str: The label of the node.
+
         """
         return self.properties.get("label")
 
 
 class Batch:
+    """Context Manager for batching graph operations for speed."""
+
     def __init__(self, graph: GraphClient):
+        """
+        Initialize Batch.
+
+        Args:
+        ----
+            graph (GraphClient): The graph client instance.
+
+        """
         self.graph = graph
 
     def __enter__(self):

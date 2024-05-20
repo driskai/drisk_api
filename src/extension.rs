@@ -1,3 +1,4 @@
+/// A Python wrapper to `GraphDiff<Uuid, drisk_api::NodeUpdate>`.
 use crate::{bytes::graph_diff_to_bytes, diff::GraphDiff, node_update::NodeUpdate};
 use pyo3::{
     exceptions::PyException,

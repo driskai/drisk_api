@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// Update type for the dRISK API.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeUpdate {

@@ -1,3 +1,4 @@
+/// A Python wrapper to `GraphDiff<Uuid, drisk_api::NodeUpdate>`.
 use crate::{bytes::graph_diff_to_bytes, diff::GraphDiff, node_update::NodeUpdate};
 use pyo3::{
     exceptions::PyException,
@@ -75,7 +76,7 @@ pub struct PyGraphDiff(GraphDiff<Uuid, NodeUpdate>);
 impl PyGraphDiff {
     #[new]
     fn new() -> Self {
-        PyGraphDiff(GraphDiff::new())
+        PyGraphDiff(GraphDiff::<_, _, f32>::new())
     }
 
     fn num_nodes(&self) -> usize {

@@ -1,0 +1,29 @@
+name: Rust code linting
+
+on:
+  push:
+    paths:
+      - '**.rs'
+      - '**/workflows/rust.yml'
+    branches:
+      - 'main'
+  pull_request:
+    paths:
+      - '**.rs'
+    branches:
+      - 'main'
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run cargo fmt
+        working-directory: src/
+        run: cargo fmt -- --check
+
+      - name: Run cargo clippy
+        working-directory: src/
+        run: cargo clippy --all-targets --all-features -- -Dwarnings

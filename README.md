@@ -78,7 +78,7 @@ It will do this recursively for each node until a terminal condition is reached 
 ```python
 
 def find_page(title):
-	"""Find the wikipedia page."""
+    """Find the wikipedia page."""
     results, suggestion = search(title, results=1, suggestion=True)
     try:
         title = results[0] or suggestion
@@ -89,7 +89,7 @@ def find_page(title):
 
 
 def top_links(links, text, top_n):
-	"""Find most important links in a wikipedia page."""
+    """Find most important links in a wikipedia page."""
     link_occurrences = {}
     for link in links:
         link_occurrences[link] = text.lower().count(link.lower())
@@ -111,14 +111,14 @@ def wiki_scraper(
     max_depth=3,
     current_depth=0,
     max_links=10,
-    first_depth_max_links=100000,
+    first_depth_max_links=100,
 ):
     try:
         page = find_page(title=page_name)
     except (DisambiguationError, PageError) as e:
         return
 
-	# add the url to the page_node (and make sure label is right)
+    # add the url to the page_node (and make sure label is right)
     graph.update_node(page_node, label=page_name, url=page.url)
 
     if page_name in visited_pages or current_depth >= max_depth:
@@ -129,7 +129,6 @@ def wiki_scraper(
     if current_depth == 0:
         tqdm_bar = tqdm(total=len(links), desc="wiki scraping")
 
-
     for link in links:
         if current_depth == 0:
             tqdm_bar.update(1)
@@ -139,14 +138,14 @@ def wiki_scraper(
         if link in string_cache:
             new_page_node = string_cache[link]
         else:
-        	# if we haven't add a new node and add to cache
+            # if we haven't add a new node and add to cache
             new_page_node = graph.create_node(label=link)
             string_cache[link] = new_page_node
 
-		 # link this original page to the new one
+        # link this original page to the new one
         graph.create_edge(page_node, new_page_node, 1.)
 
-		 # repeat for new link
+        # repeat for new link
         wiki_scraper(
             graph,
             new_page_node,
@@ -181,7 +180,6 @@ visted_pages = set()
 
 page_node = g.create_node(label=page_name)
 g.add_nodes_to_view(home_view, [page_node], [(0., 0.)])
-
 
 with g.batch():
     wiki_scraper(

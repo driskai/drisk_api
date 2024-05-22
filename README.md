@@ -56,7 +56,7 @@ We can use these building blocks to create whatever graphs we are most intereste
 In this example we will scrape the main url links for a given wikipedia page and create a graph out of it.
 
 
-Most of the code will be leveraging the [wikipedia api](https://pypi.org/project/wikipedia/) and is not particularly important. 
+Most of the code will be leveraging the [wikipedia api](https://pypi.org/project/wikipedia/) and is not particularly important.
 What is more interesting is how we can use the `api` to convert the corresponding information into a graph to then explore it in edge.
 
 
@@ -139,7 +139,7 @@ def wiki_scraper(
         if link in string_cache:
             new_page_node = string_cache[link]
         else:
-        	  # if we haven't add a new node and add to cache
+        	# if we haven't add a new node and add to cache
             new_page_node = graph.create_node(label=link)
             string_cache[link] = new_page_node
 

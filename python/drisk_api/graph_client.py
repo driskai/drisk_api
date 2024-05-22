@@ -172,7 +172,7 @@ class GraphClient:
         self,
         node_id: UUID,
         weights=False,
-    ) -> Union[list[UUID], list[tuple[UUID, float]]]:
+    ) -> Union[List[UUID], List[Tuple[UUID, float]]]:
         """
         Get the successors of a node.
 
@@ -183,8 +183,8 @@ class GraphClient:
 
         Returns
         -------
-            Union[list[UUID], list[tuple[UUID, float]]]: A list of successor node
-            IDs, or a list of tuples containing successor node IDs and their
+            Union[List[UUID], List[Tuple[UUID, float]]]: A List of successor node
+            IDs, or a List of Tuples containing successor node IDs and their
             weights if `weights` is True.
 
         """
@@ -194,7 +194,7 @@ class GraphClient:
         self,
         node_id: UUID,
         weights=False,
-    ) -> Union[list[UUID], list[tuple[UUID, float]]]:
+    ) -> Union[List[UUID], List[Tuple[UUID, float]]]:
         """
         Get the predecessors of a node.
 
@@ -205,8 +205,8 @@ class GraphClient:
 
         Returns
         -------
-            Union[list[UUID], list[tuple[UUID, float]]]: A list of predecessors node
-            IDs, or a list of tuples containing successor node IDs and their
+            Union[List[UUID], List[Tuple[UUID, float]]]: A List of predecessors node
+            IDs, or a List of Tuples containing successor node IDs and their
             weights if `weights` is True.
 
         """
@@ -285,7 +285,7 @@ class GraphClient:
         ----
             view_node (str): The ID of the view node.
             nodes (List[str]): List of node IDs to add to the view.
-            coords (List[Tuple]): List of coordinate tuples (x, y) for each node.
+            coords (List[Tuple]): List of coordinate Tuples (x, y) for each node.
 
         """
         x_node, y_node, *_ = [

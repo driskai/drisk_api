@@ -199,7 +199,7 @@ with g.batch():
 We can then head to edge to interact with the graph:
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/driskai/drisk_api/main/docs/images/Napoleon-graph.png" width="80%">
+<img src="https://github.com/driskai/drisk_api/blob/main/docs/images/Napoleon-graph.png" width="80%">
 </p>
 
 ![](![](![](![]())))

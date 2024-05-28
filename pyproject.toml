@@ -16,3 +16,8 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = ["requests"]
+
+[project.urls]
+"Homepage" = "https://github.com/driskai/drisk_api/tree/main"
+"Edge" = "demo.drisk.ai"
+"Edge Docs" = "demo.drisk.ai/docs"

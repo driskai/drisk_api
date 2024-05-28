@@ -9,7 +9,7 @@ module-name = "drisk_api"
 [project]
 name = "drisk_api"
 description="drisk_api - API to connect to dRISK Edge."
-version = "0.0.2"
+version = "0.0.3"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
@@ -20,5 +20,5 @@ dependencies = ["requests"]
 
 [project.urls]
 "Homepage" = "https://github.com/driskai/drisk_api/tree/main"
-"Edge" = "demo.drisk.ai"
-"Edge Docs" = "demo.drisk.ai/docs"
+"Edge" = "https://demo.drisk.ai/"
+"Edge Docs" = "https://demo.drisk.ai/docs/"

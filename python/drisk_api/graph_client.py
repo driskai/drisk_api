@@ -92,8 +92,13 @@ class GraphClient:
         self.auth_token = auth_token
         self.diff = PyGraphDiff()
         self.graph_id = graph_id
-        self.batching = False
+        self.batch_count = 0
         self.connect()
+
+    @property
+    def batching(self):
+        """Return `True` if the graph is in batching mode."""
+        return self.batch_count > 0
 
     def connect(self):
         """
@@ -168,6 +173,33 @@ class GraphClient:
             **data["properties"],
         )
 
+    def get_nodes(self, node_ids: List[UUID]) -> Dict[UUID, "Node"]:
+        """
+        Get multiple nodes given the ids.
+
+        Args:
+            node_ids (List[UUID]): The IDs of the nodes.
+
+        Returns
+        -------
+            Dict[UUID, Node]: A mapping of node IDs to their Node representations.
+            Any nodes that don't exist will not be included in the mapping.
+
+        """
+        url = f"{self.url}/{self.graph_id}/atomic/nodes"
+        r = requests.post(
+            url,
+            headers={"Authorization": self.auth_token},
+            json=node_ids,
+        )
+        if r.status_code >= 300:
+            raise EdgeException(r.text)
+        node_data = r.json()
+        return {
+            UUID(id): Node(self, UUID(id), **data["properties"])
+            for id, data in node_data.items()
+        }
+
     def get_successors(
         self,
         node_id: UUID,
@@ -227,7 +259,7 @@ class GraphClient:
 
         """
         url = f"{self.url}/{self.graph_id}/atomic/edges"
-        r = requests.get(
+        r = requests.post(
             url,
             headers={"Authorization": self.auth_token},
             json=[str(node) for node in nodes],
@@ -631,8 +663,8 @@ class Batch:
         self.graph = graph
 
     def __enter__(self):
-        self.graph.batching = True
+        self.graph.batch_count += 1
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.graph.batching = False
+        self.graph.batch_count -= 1
         self.graph._post_diff()

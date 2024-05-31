@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: check version
         run: |
-          RELEASE="$(git describe --tags --abbrev=0)"
+          RELEASE="${{github.event.release.tag_name}}"
           RELEASE="${RELEASE:1}"
           VERSION=$(sed -nr 's/version = "([0-9\.]*)"/\1/p' pyproject.toml)
           if [ "$RELEASE"=="$VERSION" ]; then

@@ -15,10 +15,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: check version
         run: |
+          git fetch --all
           RELEASE="$(git describe --tags --abbrev=0 --always)"
           RELEASE="${RELEASE:1}"
           VERSION=$(sed -nr 's/version = "([0-9\.]*)"/\1/p' pyproject.toml)
           if [ "$RELEASE"=="$VERSION" ]; then
+            echo "$RELEASE"
+            echo "$VERSION"
             exit 1
           else
             echo "Version in pyproject.toml matches the latest tag"

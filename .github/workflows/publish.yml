@@ -7,7 +7,26 @@ permissions:
   contents: read
 
 jobs:
+
+  check-version:
+    name: Check Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: check version
+        run: |
+          RELEASE="${{github.event.release.tag_name}}"
+          RELEASE="${RELEASE:1}"
+          VERSION=$(sed -nr 's/version = "([0-9\.]*)"/\1/p' pyproject.toml)
+          if [ "$RELEASE" == "$VERSION" ]; then
+            echo "Version in pyproject.toml matches the latest tag."
+          else
+            echo "Version in toml $VERSION does not match tag $RELEASE"
+            exit 1
+          fi
+
   linux:
+    needs: [check-version]
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -44,6 +63,7 @@ jobs:
 
   windows:
     runs-on: ${{ matrix.platform.runner }}
+    needs: [check-version]
     strategy:
       matrix:
         platform:
@@ -71,6 +91,7 @@ jobs:
 
   macos:
     runs-on: ${{ matrix.platform.runner }}
+    needs: [check-version]
     strategy:
       matrix:
         platform:
@@ -97,6 +118,7 @@ jobs:
 
   sdist:
     runs-on: ubuntu-latest
+    needs: [check-version]
     steps:
       - uses: actions/checkout@v4
       - name: Build sdist

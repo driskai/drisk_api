@@ -16,7 +16,7 @@ jobs:
       - name: check version
         run: |
           git fetch --all
-          RELEASE="$(git describe --tags --abbrev=0 --always)"
+          RELEASE="$(git describe --tags --abbrev=0)"
           RELEASE="${RELEASE:1}"
           VERSION=$(sed -nr 's/version = "([0-9\.]*)"/\1/p' pyproject.toml)
           if [ "$RELEASE"=="$VERSION" ]; then

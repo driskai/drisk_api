@@ -1,0 +1,26 @@
+name: check-version
+
+on:
+  push:
+    branches:
+      - update-ci
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    name: Check Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: check version
+        run: |
+          RELEASE="${{github.event.release.tag_name}}"
+          RELEASE="${RELEASE:1}"
+          VERSION=$(sed -nr 's/version = "([0-9\.]*)"/\1/p' pyproject.toml)
+          if [ "$RELEASE"=="$VERSION" ]; then
+            exit 1
+          else
+            echo "Version in pyproject.toml matches the latest tag"
+          fi
+

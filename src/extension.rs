@@ -88,7 +88,7 @@ impl PyGraphDiff {
     }
 
     fn add_node(&mut self, id: PyUuid, update: PyNodeUpdate) {
-        self.0.set_node_update(&id.0, update.into());
+        self.0.add_or_update_node(&id.0, update.into());
     }
 
     fn delete_node(&mut self, id: PyUuid) {

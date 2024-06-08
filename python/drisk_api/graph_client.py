@@ -10,7 +10,9 @@ from .drisk_api import PyGraphDiff
 class EdgeException(Exception):
     """General Edge Expection."""
 
-    pass
+    def __init__(self, status_code: int, message: str):
+        message = f"Edge Server Error\nStatus Code: {status_code}\n{message}"
+        super().__init__(message)
 
 
 def edge_sync(func):
@@ -26,15 +28,11 @@ def edge_sync(func):
 
 
 class GraphClient:
-    """
-    A connection to a graph in Edge.
-
-    Note: has no authentication.
-    """
+    """A connection to a graph in Edge."""
 
     default_url = "http://localhost:5001/v3/graphs"
     defaults = {
-        "label": "node",
+        "label": "",
         "url": "",
         "size": 1.0,
         "red": 0,
@@ -112,7 +110,7 @@ class GraphClient:
         url = f"{self.url}/{self.graph_id}/load"
         r = requests.get(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
 
     def rename_graph(self, name: str):
         """
@@ -135,7 +133,7 @@ class GraphClient:
             params={"name": name, "groups": ""},
         )
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
 
     def delete_graph(self):
         """
@@ -149,7 +147,7 @@ class GraphClient:
         url = f"{self.url}/{self.graph_id}/delete"
         r = requests.delete(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
 
     def get_node(self, node_id: UUID) -> Optional["Node"]:
         """
@@ -190,10 +188,10 @@ class GraphClient:
         r = requests.post(
             url,
             headers={"Authorization": self.auth_token},
-            json=node_ids,
+            json=[str(id) for id in node_ids],
         )
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
         node_data = r.json()
         return {
             UUID(id): Node(self, UUID(id), **data["properties"])
@@ -265,7 +263,7 @@ class GraphClient:
             json=[str(node) for node in nodes],
         )
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
         return r.json()
 
     def create_view(
@@ -291,24 +289,45 @@ class GraphClient:
             UUID: The ID of the created view node.
 
         """
-        view_node = self.create_node(label=label)
-        if x_node is None:
-            x_node = self.create_node(label="x ")
-        if y_node is None:
-            y_node = self.create_node(label="y ")
+        with self.batch():
+            view_node = self.create_node(label=label)
+            if x_node is None:
+                x_node = self.create_node(label="x ")
+            if y_node is None:
+                y_node = self.create_node(label="y ")
 
-        self.create_edge(self.graph_id, view_node, 1.0)
-        self.create_edge(view_node, x_node, 0.0)
-        self.create_edge(view_node, y_node, 1.0)
+            self.create_edge(self.graph_id, view_node, 1.0)
+            self.create_edge(view_node, x_node, 0.0)
+            self.create_edge(view_node, y_node, 1.0)
 
-        if filters is not None:
-            for i, f in enumerate(filters):
-                self.create_edge(view_node, f, i + 2.0)
+            if filters is not None:
+                for i, f in enumerate(filters):
+                    self.create_edge(view_node, f, i + 2.0)
 
         return view_node
 
+    def get_view_axes_and_filters(
+        self, view_node: str
+    ) -> Tuple[str, str, List[str]]:
+        """
+        Get the x-axis, y-axis, and filter nodes of a view.
+
+        Args:
+        ----
+            view_node (str): The ID of the view node.
+
+        """
+        x_node, y_node, *filters = [
+            uuid
+            for uuid, _ in sorted(
+                zip(*self.get_successors(view_node, weights=True)),
+                key=lambda x: x[1],
+            )
+        ]
+        return x_node, y_node, filters
+
     def add_nodes_to_view(
-        self, view_node: str, nodes: List[str], coords: List[Tuple]
+        self, view_node: UUID, nodes: List[UUID], coords: List[Tuple]
     ):
         """
         Add nodes to a view with given coordinates.
@@ -328,9 +347,10 @@ class GraphClient:
             )
         ]
 
-        for n, (x, y) in zip(nodes, coords):
-            self.create_edge(x_node, n, x)
-            self.create_edge(y_node, n, y)
+        with self.batch():
+            for n, (x, y) in zip(nodes, coords):
+                self.create_edge(x_node, n, x)
+                self.create_edge(y_node, n, y)
 
     def _post_diff(self):
         """
@@ -351,7 +371,7 @@ class GraphClient:
             headers={"Authorization": self.auth_token},
         )
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
         self.diff.clear()
 
     def _diff_size(self) -> int:
@@ -397,12 +417,12 @@ class GraphClient:
             url += query
         r = requests.get(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
         return r.json()
 
-    def batch(self):
+    def batch(self) -> "Batch":
         """
-        Enter batching mode.
+        Enter the batching context.
 
         While in batching mode all changes to the graph are stored in memory
         and not communicated to the server. Note that performing read operations
@@ -411,8 +431,23 @@ class GraphClient:
         """
         return Batch(self)
 
+    def set_batching_enabled(self, enabled: bool = True):
+        """
+        Enter batching mode.
+
+        See `batch` method for more information.
+
+        Args:
+        ----
+            enabled (bool, optional): Whether to enable batching (default: True).
+
+        """
+        self.batch_count += 1 if enabled else -1
+        if not self.batching:
+            self._post_diff()
+
     @edge_sync
-    def create_node(self, **properties) -> UUID:
+    def create_node(self, label="node", **properties) -> UUID:
         """
         Create a new node with the given properties.
 
@@ -424,7 +459,7 @@ class GraphClient:
             UUID: The ID of the created node.
 
         """
-        kwargs = {**self.defaults, **properties}
+        kwargs = {**self.defaults, "label": label, **properties}
         id = kwargs.pop("id", uuid4())
         if isinstance(id, str):
             id = UUID(id)
@@ -517,7 +552,7 @@ class GraphClient:
             url, headers={"Authorization": self.auth_token}, files={filename: file}
         )
         if not r.ok:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
 
         file_id = r.json()
 
@@ -544,7 +579,7 @@ class GraphClient:
             files={filename: file},
         )
         if not r.ok:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
 
     def add_data_from_json(self, filename: str, file: Union[Dict, List]) -> UUID:
         """
@@ -570,7 +605,7 @@ class GraphClient:
             json={"filename": filename, "file": file},
         )
         if not r.ok:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
 
         json_id = r.json()
 
@@ -667,4 +702,5 @@ class Batch:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.graph.batch_count -= 1
-        self.graph._post_diff()
+        if not self.graph.batching:
+            self.graph._post_diff()

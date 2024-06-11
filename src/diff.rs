@@ -93,7 +93,7 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign, W: Copy + PartialEq> GraphDif
 
     /// Add a new node to the diff. If previously marked as deleted, it will be overwritten.
     pub fn add_node(&mut self, node_id: &Id) {
-        self.nodes.new_or_updated.insert(*node_id, T::default());
+        let _ = self.nodes.new_or_updated.try_insert(*node_id, T::default());
         self.nodes.deleted.remove(node_id);
     }
 

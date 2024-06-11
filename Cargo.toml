@@ -1,6 +1,6 @@
 [package]
 name = "drisk-api"
-version = "0.0.6"
+version = "0.0.7"
 description = "drisk_api - API to connect to dRISK Edge."
 homepage = "https://github.com/driskai/drisk_api"
 repository = "https://github.com/driskai/drisk_api"

@@ -53,6 +53,7 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign, W: Copy + PartialEq> GraphDif
         GraphDiff::default()
     }
 
+    /// Initialse diff from a NodeDiff and an EdgeDiff
     pub fn from_diffs(nodes: NodeDiff<Id, T>, edges: EdgeDiff<Id, W>) -> GraphDiff<Id, T, W> {
         GraphDiff { nodes, edges }
     }

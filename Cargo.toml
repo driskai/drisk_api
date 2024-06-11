@@ -1,6 +1,12 @@
 [package]
 name = "drisk-api"
-version = "0.1.0"
+version = "0.0.6"
+description = "drisk_api - API to connect to dRISK Edge."
+homepage = "https://github.com/driskai/drisk_api"
+repository = "https://github.com/driskai/drisk_api"
+keywords = ["drisk"]
+readme = "README.md"
+license = "MIT"
 edition = "2021"
 
 [lib]

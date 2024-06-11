@@ -8,7 +8,7 @@ module-name = "drisk_api"
 
 [project]
 name = "drisk_api"
-description="drisk_api - API to connect to dRISK Edge."
+description = "drisk_api - API to connect to dRISK Edge."
 version = "0.0.6"
 requires-python = ">=3.8"
 classifiers = [

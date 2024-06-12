@@ -8,6 +8,10 @@ keywords = ["drisk"]
 readme = "README.md"
 license = "MIT"
 edition = "2021"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
 
 [lib]
 name = "drisk_api"

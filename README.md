@@ -14,7 +14,7 @@ Some useful links for new edge users:
 pip install drisk_api
 ```
 
-## Baisc Usage
+## Basic Usage
 
 The API supports the basic building blocs for Create/Read/Update/Delete operations on the graph. For example:
 
@@ -41,8 +41,9 @@ successors = graph.get_successors(node_id)
 graph.update_node(node_id, label="new label", size=3)
 
 # add edges in batch
+other_id = graph.create_node(label="another node")
 with graph.batch():
-    graph.add_edge(node, other, weight=5.)
+    graph.create_edge(node_id, other, weight=5.)
 
 ```
 

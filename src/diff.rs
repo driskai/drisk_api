@@ -241,6 +241,47 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign, W: Copy + PartialEq> GraphDif
         self.edges.deleted.clear();
     }
 
+    /// Remove a new or updated node from the diff.
+    /// Returns the update if there was one.
+    pub fn remove_updated_node(&mut self, id: &Id) -> Option<T> {
+        self.nodes.new_or_updated.remove(id)
+    }
+
+    /// Remove a node marked for deletion from the diff.
+    /// Returns `true` if the node was marked for deletion.
+    pub fn remove_deleted_node(&mut self, id: &Id) -> bool {
+        self.nodes.deleted.remove(id)
+    }
+
+    /// Remove a new updated edge from the diff.
+    /// Returns the updated weight if there was one.
+    pub fn remove_updated_edge(&mut self, from: &Id, to: &Id) -> Option<W> {
+        let removed = self
+            .edges
+            .new_or_updated
+            .get_mut(from)
+            .and_then(|edges| edges.remove(to));
+        if removed.is_some() {
+            self.edges.new_or_updated.retain(|_, e| !e.is_empty());
+        }
+        removed
+    }
+
+    /// Remove an edge marked for deletion from the diff.
+    /// Returns `true` if the edge was marked for deletion.
+    pub fn remove_deleted_edge(&mut self, from: &Id, to: &Id) -> bool {
+        let deleted = self
+            .edges
+            .deleted
+            .get_mut(from)
+            .map(|edges| edges.remove(to))
+            .unwrap_or(false);
+        if deleted {
+            self.edges.deleted.retain(|_, e| !e.is_empty());
+        }
+        deleted
+    }
+
     #[cfg(test)]
     fn is_internally_consistent(&self) -> bool {
         for (from, to_weight) in self.edges.new_or_updated.iter() {

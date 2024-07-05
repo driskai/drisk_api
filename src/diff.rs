@@ -569,4 +569,24 @@ mod tests {
 
         assert!(diff.is_internally_consistent());
     }
+
+    #[test]
+    fn test_remove_from_diff() {
+        let mut diff = GraphDiff::<usize, NodeUpdate>::new();
+
+        diff.get_or_create_mut_node_update(&0).label = Some("test".to_string());
+        diff.get_or_create_mut_node_update(&0).size = Some(10.0);
+        diff.delete_node(3);
+        diff.add_edge(&0, &1, 1.0).unwrap();
+        diff.delete_edge(&0, &2);
+
+        diff.remove_updated_node(&0);
+        assert!(diff.nodes.new_or_updated.is_empty());
+        diff.remove_deleted_node(&3);
+        assert!(!diff.nodes.deleted.contains(&3));
+        diff.remove_updated_edge(&0, &1);
+        assert!(diff.edges.new_or_updated.is_empty());
+        diff.remove_deleted_edge(&0, &2);
+        assert!(!diff.edges.deleted.contains_key(&0));
+    }
 }

@@ -27,3 +27,6 @@ jobs:
       - name: Run cargo clippy
         working-directory: src/
         run: cargo clippy --all-targets --all-features -- -Dwarnings
+
+      - name: Run cargo test
+        run: cargo test --all-features

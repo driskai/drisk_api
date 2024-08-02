@@ -10,9 +10,9 @@ use std::{fmt::Debug, hash::Hash, ops::AddAssign};
 ///
 /// `GraphDiff` requires two generic types:
 /// * `Id` is the type used to index nodes in the graph. It requires standard trait bounds for
-/// index types.
+///   index types.
 /// * `T` is the type used to represent node property updates. It requires `Default` used
-/// when adding a new node to the diff and `AddAssign` to combine updates.
+///   when adding a new node to the diff and `AddAssign` to combine updates.
 ///
 /// `GraphDiff`s support composition with `AddAssign`:
 /// ```

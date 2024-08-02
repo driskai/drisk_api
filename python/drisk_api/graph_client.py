@@ -192,10 +192,10 @@ class GraphClient:
         )
         if r.status_code >= 300:
             raise EdgeException(r.status_code, r.text)
-        node_data = r.json()
+        diff = PyGraphDiff.from_bytes(r.content)
+        nodes = diff.new_or_updated_nodes()
         return {
-            UUID(id): Node(self, UUID(id), **data["properties"])
-            for id, data in node_data.items()
+            UUID(id): Node(self, UUID(id), **node) for id, node in nodes.items()
         }
 
     def get_successors(
@@ -390,7 +390,7 @@ class GraphClient:
         node_id: UUID,
         nbr_type: Optional[str] = None,
         weights: bool = False,
-    ) -> dict:
+    ) -> Union[dict, List[UUID], List[Tuple[UUID, float]]]:
         """
         Retrieve information about a node from the server.
 
@@ -418,7 +418,12 @@ class GraphClient:
         r = requests.get(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
             raise EdgeException(r.status_code, r.text)
-        return r.json()
+        data = r.json()
+        if nbr_type:
+            if weights:
+                return [(UUID(n), w) for n, w in zip(*data)]
+            return [UUID(n) for n in data]
+        return data
 
     def batch(self) -> "Batch":
         """

@@ -74,7 +74,7 @@ class GraphClient:
             params={"name": graph_name},
         )
         if not r.ok:
-            raise EdgeException(r.text)
+            raise EdgeException(r.status_code, r.text)
         graph_id = r.json()
         return cls(graph_id, token, url=url)
 

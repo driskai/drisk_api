@@ -192,10 +192,10 @@ class GraphClient:
         )
         if r.status_code >= 300:
             raise EdgeException(r.status_code, r.text)
-        node_data = r.json()
+        diff = PyGraphDiff.from_bytes(r.content)
+        nodes = diff.new_or_updated_nodes()
         return {
-            UUID(id): Node(self, UUID(id), **data["properties"])
-            for id, data in node_data.items()
+            UUID(id): Node(self, UUID(id), **node) for id, node in nodes.items()
         }
 
     def get_successors(
@@ -242,7 +242,7 @@ class GraphClient:
         """
         return self._get_node_request(node_id, "predecessors", weights=weights)
 
-    def get_edges(self, nodes: Iterable[UUID]) -> dict:
+    def get_edges(self, nodes: Iterable[UUID]) -> Dict:
         """
         Get all edges between the given nodes.
 
@@ -251,7 +251,7 @@ class GraphClient:
 
         Returns
         -------
-            dict: Nested dictionary representing edges between nodes.
+            Dict: Nested dictionary representing edges between nodes.
                 Format: {from_node_id: {to_node_id: weight}}.
                 Returns a dictionary for each given node even if it has no edges.
 
@@ -390,7 +390,7 @@ class GraphClient:
         node_id: UUID,
         nbr_type: Optional[str] = None,
         weights: bool = False,
-    ) -> dict:
+    ) -> Union[Dict, List[UUID], List[Tuple[UUID, float]]]:
         """
         Retrieve information about a node from the server.
 
@@ -402,7 +402,8 @@ class GraphClient:
 
         Returns
         -------
-            dict: JSON response containing information about the node.
+            JSON response containing information about the node, its neighbors or
+            its neighbors and edge weights.
 
         Raises
         ------
@@ -418,7 +419,12 @@ class GraphClient:
         r = requests.get(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
             raise EdgeException(r.status_code, r.text)
-        return r.json()
+        data = r.json()
+        if nbr_type:
+            if weights:
+                return [(UUID(n), w) for n, w in zip(*data)]
+            return [UUID(n) for n in data]
+        return data
 
     def batch(self) -> "Batch":
         """
@@ -654,13 +660,13 @@ class Node:
         self.graph.update_node(self.id, **self._properties)
 
     @property
-    def properties(self) -> dict:
+    def properties(self) -> Dict:
         """
         Get the properties of the node.
 
         Returns
         -------
-            dict: The properties of the node.
+            Dict: The properties of the node.
 
         """
         return self._properties

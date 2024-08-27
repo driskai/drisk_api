@@ -320,7 +320,7 @@ class GraphClient:
         x_node, y_node, *filters = [
             uuid
             for uuid, _ in sorted(
-                zip(*self.get_successors(view_node, weights=True)),
+                self.get_successors(view_node, weights=True),
                 key=lambda x: x[1],
             )
         ]
@@ -342,7 +342,7 @@ class GraphClient:
         x_node, y_node, *_ = [
             uuid
             for uuid, _ in sorted(
-                zip(*self.get_successors(view_node, weights=True)),
+                self.get_successors(view_node, weights=True),
                 key=lambda x: x[1],
             )
         ]

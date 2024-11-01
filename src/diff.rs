@@ -216,6 +216,14 @@ impl<Id: Hash + Eq + Copy, T: Default + AddAssign, W: Copy + PartialEq> GraphDif
         Ok(())
     }
 
+    /// # Safety
+    /// Does not check that the node IDs are valid (i.e. not marked as deleted).
+    /// CAUTION: This replaces the edge-diff by the provided one, potentially making `self`
+    /// internally inconsistent.
+    pub unsafe fn set_edges_unchecked(&mut self, edges: HashMap<Id, HashMap<Id, W>>) {
+        self.edges.new_or_updated = edges;
+    }
+
     /// Add a new edge to be deleted to the diff.
     /// If present, the edge is removed from `new_or_updated`.
     pub fn delete_edge(&mut self, from: &Id, to: &Id) {

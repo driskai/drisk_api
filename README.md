@@ -1,11 +1,11 @@
-# Edge Python API
-API to connect to dRISK Edge.
+# Conode Python API
+API to connect to Conode.
 
-### Useful Edge Links
-Some useful links for new edge users:
+### Useful Links
+Some useful links for new Conode users:
 
-- Log in to edge: [demo.drisk.ai](https://demo.drisk.ai/)
-- Documentation: [demo.drisk.ai/docs](https://demo.drisk.ai/docs/)
+- [Log in to Conode](https://app.drisk.ai/)
+- [Documentation](https://app.drisk.ai/docs/)
 
 
 
@@ -22,7 +22,7 @@ The API supports the basic building blocs for Create/Read/Update/Delete operatio
 ```python
 from drisk_api import GraphClient
 
-token = "<edge_auth_token>"
+token = "<conode_auth_token>"
 
 # create or conntect to a graph
 new_graph = GraphClient.create_graph("a graph", token)
@@ -43,7 +43,7 @@ graph.update_node(node_id, label="new label", size=3)
 # add edges in batch
 other_id = graph.create_node(label="another node")
 with graph.batch():
-    graph.create_edge(node_id, other, weight=5.)
+    graph.create_edge(node_id, other_id, weight=5.)
 
 ```
 
@@ -54,14 +54,14 @@ We can use these building blocks to create whatever graphs we are most intereste
 
 ### Wikepedia Crawler
 
-In this example we will scrape the main url links for a given wikipedia page and create a graph out of it.
+In this example we will scrape the main url links for a given wikipedia page and create a graph.
 
 
 Most of the code will be leveraging the [wikipedia api](https://pypi.org/project/wikipedia/) and is not particularly important.
-What is more interesting is how we can use the `api` to convert the corresponding information into a graph to then explore it in edge.
+What is more interesting is how we can use the `api` to convert the corresponding information into a graph to then explore it in Conode.
 
 
-First load the relevant module
+First load the relevant modules
 
 ```python
 import wikipedia
@@ -165,7 +165,7 @@ def wiki_scraper(
 Then we can connect to our graph (or make one):
 
 ```python
-TOKEN = "<edge_auth_token>"
+TOKEN = "<conode_auth_token>"
 graph_id = "graph_id"
 home_view = "view_id"
 g = GraphClient(graph_id, TOKEN)
@@ -197,7 +197,7 @@ with g.batch():
 
 ```
 
-We can then head to edge to interact with the graph:
+We can then head to Conode to interact with the graph:
 
 <p align="center">
 <img src="https://github.com/driskai/drisk_api/blob/main/docs/images/Napoleon-graph.png" width="80%">

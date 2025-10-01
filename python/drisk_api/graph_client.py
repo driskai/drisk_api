@@ -7,16 +7,16 @@ import requests
 from .drisk_api import PyGraphDiff
 
 
-class EdgeException(Exception):
-    """General Edge Expection."""
+class ConodeException(Exception):
+    """General Edge Exception."""
 
     def __init__(self, status_code: int, message: str):
-        message = f"Edge Server Error\nStatus Code: {status_code}\n{message}"
+        message = f"Conode Server Error\nStatus Code: {status_code}\n{message}"
         super().__init__(message)
 
 
-def edge_sync(func):
-    """Sync edges."""
+def sync(func):
+    """Sync with the remote graph before continuing."""
 
     def wrapper(self: "GraphClient", *args, **kwargs):
         result = func(self, *args, **kwargs)
@@ -28,7 +28,7 @@ def edge_sync(func):
 
 
 class GraphClient:
-    """A connection to a graph in Edge."""
+    """A connection to a graph."""
 
     default_url = "http://localhost:5001/v3/graphs"
     defaults = {
@@ -54,7 +54,7 @@ class GraphClient:
         Args:
             graph_name (str): Name of the graph.
             token (str): Authentication token.
-            url (Optionalal[str]): API endpoint URL (default URL if not provided).
+            url (Optional[str]): API endpoint URL (default URL if not provided).
 
         Returns
         -------
@@ -62,7 +62,7 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If graph creation fails.
+            ConodeException: If graph creation fails.
 
         """
         if url is None:
@@ -74,7 +74,7 @@ class GraphClient:
             params={"name": graph_name},
         )
         if not r.ok:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
         graph_id = r.json()
         return cls(graph_id, token, url=url)
 
@@ -104,13 +104,13 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If connecting to the server or loading the graph fails.
+            ConodeException: If connecting to the server or loading the graph fails.
 
         """
         url = f"{self.url}/{self.graph_id}/load"
         r = requests.get(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
 
     def rename_graph(self, name: str):
         """
@@ -122,7 +122,7 @@ class GraphClient:
         Raises
         ------
             ValueError: If the provided name is empty.
-            EdgeException: If renaming the graph fails.
+            ConodeException: If renaming the graph fails.
 
         """
         if len(name) == 0:
@@ -133,7 +133,7 @@ class GraphClient:
             params={"name": name, "groups": ""},
         )
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
 
     def delete_graph(self):
         """
@@ -141,13 +141,13 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If deleting the graph fails.
+            ConodeException: If deleting the graph fails.
 
         """
         url = f"{self.url}/{self.graph_id}/delete"
         r = requests.delete(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
 
     def get_node(self, node_id: UUID) -> Optional["Node"]:
         """
@@ -191,7 +191,7 @@ class GraphClient:
             json=[str(id) for id in node_ids],
         )
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
         diff = PyGraphDiff.from_bytes(r.content)
         nodes = diff.new_or_updated_nodes()
         return {
@@ -263,7 +263,7 @@ class GraphClient:
             json=[str(node) for node in nodes],
         )
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
         return r.json()
 
     def create_view(
@@ -278,11 +278,11 @@ class GraphClient:
 
         Args:
             label (str): The label for the view node.
-            x_node (Optionalal[str]): The label for the x-axis node.
+            x_node (Optional[str]): The label for the x-axis node.
             If None, a default x-axis node is created.
-            y_node (Optionalal[str]): The label for the y-axis node.
+            y_node (Optional[str]): The label for the y-axis node.
             If None, a default y-axis node is created.
-            filters (Optionalal[List[str]]): List of labels for filter nodes.
+            filters (Optional[List[str]]): List of labels for filter nodes.
 
         Returns
         -------
@@ -358,7 +358,7 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If posting the graph differences fails.
+            ConodeException: If posting the graph differences fails.
 
         """
         if self._diff_size() == 0:
@@ -371,7 +371,7 @@ class GraphClient:
             headers={"Authorization": self.auth_token},
         )
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
         self.diff.clear()
 
     def _diff_size(self) -> int:
@@ -396,7 +396,7 @@ class GraphClient:
 
         Args:
             node_id (UUID): The ID of the node to retrieve information for.
-            nbr_type (Optionalal[str]): The type of neighboring nodes to include
+            nbr_type (Optional[str]): The type of neighboring nodes to include
             (default: None).
             weights (bool): Include weights in the response (default: False).
 
@@ -407,7 +407,7 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If retrieving information about the node fails.
+            ConodeException: If retrieving information about the node fails.
 
         """
         url = f"{self.url}/{self.graph_id}/atomic/{node_id}"
@@ -418,7 +418,7 @@ class GraphClient:
             url += query
         r = requests.get(url, headers={"Authorization": self.auth_token})
         if r.status_code >= 300:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
         data = r.json()
         if nbr_type:
             if weights:
@@ -452,7 +452,7 @@ class GraphClient:
         if not self.batching:
             self._post_diff()
 
-    @edge_sync
+    @sync
     def create_node(self, label="node", **properties) -> UUID:
         """
         Create a new node with the given properties.
@@ -472,7 +472,7 @@ class GraphClient:
         self.diff.add_node(id.bytes, kwargs)
         return id
 
-    @edge_sync
+    @sync
     def create_edge(self, from_: UUID, to: UUID, weight: float = 1.0):
         """
         Create a new edge between two nodes.
@@ -490,7 +490,7 @@ class GraphClient:
             to = UUID(to)
         self.diff.add_edge(from_.bytes, to.bytes, weight)
 
-    @edge_sync
+    @sync
     def delete_node(self, node_id: UUID):
         """
         Delete a node from the graph.
@@ -504,7 +504,7 @@ class GraphClient:
             node_id = UUID(node_id)
         self.diff.delete_node(node_id.bytes)
 
-    @edge_sync
+    @sync
     def delete_edge(self, from_: UUID, to: UUID):
         """
         Delete an edge between two nodes.
@@ -521,7 +521,7 @@ class GraphClient:
             to = UUID(to)
         self.diff.delete_edge(from_.bytes, to.bytes)
 
-    @edge_sync
+    @sync
     def update_node(self, node_id: UUID, **new_properties):
         """
         Update properties of a node.
@@ -550,7 +550,7 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If importing the file fails.
+            ConodeException: If importing the file fails.
 
         """
         url = f"{self.url}/{self.graph_id}/data/file"
@@ -558,7 +558,7 @@ class GraphClient:
             url, headers={"Authorization": self.auth_token}, files={filename: file}
         )
         if not r.ok:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
 
         file_id = r.json()
 
@@ -575,7 +575,7 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If updating the file fails.
+            ConodeException: If updating the file fails.
 
         """
         url = f"{self.url}/{self.graph_id}/data/file/{node_id}"
@@ -585,7 +585,7 @@ class GraphClient:
             files={filename: file},
         )
         if not r.ok:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
 
     def add_data_from_json(self, filename: str, file: Union[Dict, List]) -> UUID:
         """
@@ -601,7 +601,7 @@ class GraphClient:
 
         Raises
         ------
-            EdgeException: If adding the JSON data fails.
+            ConodeException: If adding the JSON data fails.
 
         """
         url = f"{self.url}/{self.graph_id}/data/json"
@@ -611,7 +611,7 @@ class GraphClient:
             json={"filename": filename, "file": file},
         )
         if not r.ok:
-            raise EdgeException(r.status_code, r.text)
+            raise ConodeException(r.status_code, r.text)
 
         json_id = r.json()
 

@@ -8,7 +8,7 @@ module-name = "drisk_api"
 
 [project]
 name = "drisk_api"
-description = "drisk_api - API to connect to dRISK Edge."
+description = "drisk_api - API to connect to Conode."
 version = "0.0.9"
 requires-python = ">=3.8"
 classifiers = [
@@ -20,5 +20,5 @@ dependencies = ["requests"]
 
 [project.urls]
 "Homepage" = "https://github.com/driskai/drisk_api/tree/main"
-"Edge" = "https://demo.drisk.ai/"
-"Edge Docs" = "https://demo.drisk.ai/docs/"
+"Conode" = "https://app.drisk.ai/"
+"Conode Docs" = "https://app.drisk.ai/docs/"

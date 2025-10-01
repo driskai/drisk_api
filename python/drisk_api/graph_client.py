@@ -8,7 +8,7 @@ from .drisk_api import PyGraphDiff
 
 
 class ConodeException(Exception):
-    """General Edge Expection."""
+    """General Edge Exception."""
 
     def __init__(self, status_code: int, message: str):
         message = f"Conode Server Error\nStatus Code: {status_code}\n{message}"
@@ -54,7 +54,7 @@ class GraphClient:
         Args:
             graph_name (str): Name of the graph.
             token (str): Authentication token.
-            url (Optionalal[str]): API endpoint URL (default URL if not provided).
+            url (Optional[str]): API endpoint URL (default URL if not provided).
 
         Returns
         -------
@@ -278,11 +278,11 @@ class GraphClient:
 
         Args:
             label (str): The label for the view node.
-            x_node (Optionalal[str]): The label for the x-axis node.
+            x_node (Optional[str]): The label for the x-axis node.
             If None, a default x-axis node is created.
-            y_node (Optionalal[str]): The label for the y-axis node.
+            y_node (Optional[str]): The label for the y-axis node.
             If None, a default y-axis node is created.
-            filters (Optionalal[List[str]]): List of labels for filter nodes.
+            filters (Optional[List[str]]): List of labels for filter nodes.
 
         Returns
         -------
@@ -396,7 +396,7 @@ class GraphClient:
 
         Args:
             node_id (UUID): The ID of the node to retrieve information for.
-            nbr_type (Optionalal[str]): The type of neighboring nodes to include
+            nbr_type (Optional[str]): The type of neighboring nodes to include
             (default: None).
             weights (bool): Include weights in the response (default: False).
 

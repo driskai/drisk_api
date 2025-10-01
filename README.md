@@ -16,7 +16,7 @@ pip install drisk_api
 
 ## Basic Usage
 
-The API supports the basic building blocs for Create/Read/Update/Delete operations on the graph. For example:
+The API supports the basic building blocks for Create/Read/Update/Delete operations on the graph. For example:
 
 
 ```python
@@ -24,7 +24,7 @@ from drisk_api import GraphClient
 
 token = "<conode_auth_token>"
 
-# create or conntect to a graph
+# create or connect to a graph
 new_graph = GraphClient.create_graph("a graph", token)
 graph = GraphClient("graph_id", token)
 
@@ -52,7 +52,7 @@ with graph.batch():
 We can use these building blocks to create whatever graphs we are most interested in. Below are some examples:
 
 
-### Wikepedia Crawler
+### Wikipedia Crawler
 
 In this example we will scrape the main url links for a given wikipedia page and create a graph.
 
@@ -125,6 +125,8 @@ def wiki_scraper(
     if page_name in visited_pages or current_depth >= max_depth:
         return
 
+    visited_pages.add(page_name)
+
     links = top_links(page.links, page.content, first_depth_max_links if current_depth == 0 else max_links)
 
     if current_depth == 0:
@@ -152,13 +154,11 @@ def wiki_scraper(
             new_page_node,
             link,
             string_cache,
-            visted_pages,
+            visited_pages,
             current_depth=current_depth + 1,
             max_links=max_links,
             first_depth_max_links=first_depth_max_links,
         )
-
-    visited_pages.add(page_name)
 
 ```
 
@@ -202,5 +202,3 @@ We can then head to Conode to interact with the graph:
 <p align="center">
 <img src="https://github.com/driskai/drisk_api/blob/main/docs/images/Napoleon-graph.png" width="80%">
 </p>
-
-![](![](![](![]())))
